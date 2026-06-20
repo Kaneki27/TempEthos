@@ -1,0 +1,32 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Auth Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function getUserRole() {
+      // Fetch role claim from token
+      return request.auth.token.role;
+    }
+    
+    function isStaff() {
+      return isAuthenticated() && (getUserRole() == 'admin' || getUserRole() == 'doctor' || getUserRole() == 'nurse');
+    }
+    
+    function isOwnPatient(patientId) {
+      return isAuthenticated() && request.auth.token.linkedId == patientId;
+    }
+
+    // Patient Report Uploads validation rules (FR-PAT-05, 6.2 Security)
+    match /reports/{patientId}/{allPaths=**} {
+      allow read: if isStaff() || isOwnPatient(patientId);
+      allow write: if isStaff()
+                   && request.resource.size <= 20 * 1024 * 1024 // <= 20 MB
+                   && (request.resource.contentType == 'application/pdf' 
+                       || request.resource.contentType.matches('image/.*'));
+    }
+  }
+}

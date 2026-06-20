@@ -1,82 +1,251 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Auth Helper Functions
+
+    // =========================
+    // Helper Functions
+    // =========================
+
     function isAuthenticated() {
       return request.auth != null;
     }
-    
-    function getUserData() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+
+    function userDoc() {
+      return get(
+        /databases/$(database)/documents/users/$(request.auth.uid)
+      );
     }
-    
+
     function getUserRole() {
-      return getUserData().role;
+      return userDoc().data.role;
     }
-    
-    function isStaff() {
-      return isAuthenticated() && (getUserRole() == 'admin' || getUserRole() == 'doctor' || getUserRole() == 'nurse');
-    }
-    
+
     function isAdmin() {
-      return isAuthenticated() && getUserRole() == 'admin';
+      return isAuthenticated() &&
+             getUserRole() == "admin";
     }
-    
+
+    function isDoctor() {
+      return isAuthenticated() &&
+             getUserRole() == "doctor";
+    }
+
+    function isNurse() {
+      return isAuthenticated() &&
+             getUserRole() == "nurse";
+    }
+
+    function isStaff() {
+      return isAdmin() ||
+             isDoctor() ||
+             isNurse();
+    }
+
+    function isClinicalStaff() {
+      return isDoctor() ||
+             isNurse();
+    }
+
     function isOwnPatient(patientId) {
-      return isAuthenticated() && getUserData().linkedId == patientId;
+      return isAuthenticated() &&
+             userDoc().data.linkedId == patientId;
     }
 
-    // Patients: staff can read/write; patient can only read own record (FR-PP-01)
+    // =========================
+    // Users
+    // =========================
+
+    match /users/{userId} {
+
+      allow read: if request.auth.uid == userId
+                  || isAdmin();
+
+      allow create: if request.auth.uid == userId;
+
+      allow update: if request.auth.uid == userId
+                    || isAdmin();
+
+      allow delete: if isAdmin();
+    }
+
+    // =========================
+    // Patients
+    // =========================
+
     match /patients/{patientId} {
-      allow read: if isStaff() || isOwnPatient(patientId);
-      allow write: if isStaff();
+
+      allow read: if isStaff()
+                  || isOwnPatient(patientId);
+
+      allow create: if isStaff();
+
+      allow update: if isStaff();
+
+      allow delete: if isAdmin();
     }
-    
-    // Staff directories
+
+    // =========================
+    // Staff
+    // =========================
+
     match /staff/{staffId} {
+
       allow read: if isStaff();
-      allow write: if isAdmin();
+
+      allow create: if isAdmin();
+
+      allow update: if isAdmin();
+
+      allow delete: if isAdmin();
     }
 
-    // Treatments, Diagnoses, Analyses: staff can read/write; patient can read own (FR-PP-01)
+    // =========================
+    // Treatments
+    // =========================
+
     match /treatments/{treatId} {
-      allow read: if isStaff() || isOwnPatient(resource.data.patientId);
-      allow write: if isStaff();
+
+      allow read: if isStaff()
+                  || isOwnPatient(resource.data.patientId);
+
+      allow create: if isStaff();
+
+      allow update: if isStaff();
+
+      allow delete: if isAdmin();
     }
-    
+
+    // =========================
+    // Diagnoses
+    // =========================
+
     match /diagnoses/{diagId} {
-      allow read: if isStaff() || isOwnPatient(resource.data.patientId);
-      allow write: if isStaff();
+
+      allow read: if isStaff()
+                  || isOwnPatient(resource.data.patientId);
+
+      allow create: if isStaff();
+
+      allow update: if isStaff();
+
+      allow delete: if isAdmin();
     }
-    
+
+    // =========================
+    // Analyses
+    // =========================
+
     match /analyses/{anaId} {
-      allow read: if isStaff() || isOwnPatient(resource.data.patientId);
-      allow write: if isStaff();
+
+      allow read: if isStaff()
+                  || isOwnPatient(resource.data.patientId);
+
+      allow create: if isStaff();
+
+      allow update: if isStaff();
+
+      allow delete: if isAdmin();
     }
-    
-    // Inventory medicines: all staff can read; only admin writes
-    match /medicines/{medId} {
+
+    // =========================
+    // Appointments
+    // =========================
+
+    match /appointments/{appointmentId} {
+
       allow read: if isStaff();
-      allow write: if isAdmin();
+
+      allow create: if isStaff();
+
+      allow update: if isStaff();
+
+      allow delete: if isAdmin();
     }
 
-    // Ward alerts queue
+    // =========================
+    // Tasks
+    // =========================
+
+    match /tasks/{taskId} {
+
+      allow read: if isStaff();
+
+      allow create: if isStaff();
+
+      allow update: if isStaff();
+
+      allow delete: if isAdmin();
+    }
+
+    // =========================
+    // Rooms
+    // =========================
+
+    match /rooms/{roomId} {
+
+      allow read: if isStaff();
+
+      allow create: if isAdmin();
+
+      allow update: if isAdmin();
+
+      allow delete: if isAdmin();
+    }
+
+    // =========================
+    // Medicines
+    // =========================
+
+    match /medicines/{medId} {
+
+      allow read: if isStaff();
+
+      allow create: if isAdmin();
+
+      allow update: if isAdmin();
+
+      allow delete: if isAdmin();
+    }
+
+    // =========================
+    // Alerts
+    // =========================
+
     match /alerts/{alertId} {
-      allow read, write: if isStaff();
+
+      allow read: if isStaff();
+
+      allow create: if isStaff();
+
+      allow update: if isStaff();
+
+      allow delete: if isAdmin();
     }
 
-    // Audit logs: anyone can append, nobody can update or delete (FR-AUD-03)
+    // =========================
+    // Audit Logs
+    // =========================
+
     match /auditLogs/{logId} {
+
       allow create: if isAuthenticated();
+
       allow read: if isAdmin();
+
       allow update, delete: if false;
     }
 
-    // AI Reports: doctors/nurses can read; only server-side writes
+    // =========================
+    // AI Reports
+    // =========================
+
     match /aiReports/{reportId} {
-      allow read: if isStaff();
-      allow write: if false; // Cloud Functions / Server Admin SDK only
+
+      allow read: if isClinicalStaff();
+
+      allow write: if false;
     }
+
   }
 }

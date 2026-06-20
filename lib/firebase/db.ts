@@ -1,30 +1,83 @@
-import { firestore, hasFirebaseConfig } from './config';
-import { mockDb } from './mockDb';
+import { firestore } from './config';
 import { 
   collection, 
   doc, 
   getDocs, 
   getDoc, 
   addDoc, 
+  setDoc,
   updateDoc, 
   deleteDoc, 
   onSnapshot,
   query,
   where,
-  orderBy
+  orderBy,
+  limit,
+  writeBatch
 } from 'firebase/firestore';
+import { 
+  seedPatients, 
+  seedStaff, 
+  seedRooms, 
+  seedMedicines, 
+  seedAlerts, 
+  seedAppointments, 
+  seedDiagnoses, 
+  seedTreatments, 
+  seedAnalyses, 
+  seedTasks, 
+  seedResponsibilities, 
+  seedHistory, 
+  seedAiReports 
+} from './seeds';
 
 type DbCollection = 'patients' | 'staff' | 'rooms' | 'medicines' | 'alerts' | 'appointments' | 'diagnoses' | 'treatments' | 'analyses' | 'tasks' | 'responsibilities' | 'history' | 'aiReports' | 'auditLogs';
+
+// Automatic Firestore database seeder
+export const seedFirestoreIfEmpty = async () => {
+  try {
+    // If rooms already exists, don't seed again
+    const roomsSnap = await getDocs(query(collection(firestore, 'rooms'), limit(1)));
+    if (!roomsSnap.empty) {
+      console.log('Firestore database has existing collections. Skipping seeding.');
+      return;
+    }
+
+    console.log('Firestore database is empty. Seeding default clinical records...');
+    const batch = writeBatch(firestore);
+
+    const addSeedItem = (colName: string, item: any) => {
+      const docRef = doc(firestore, colName, item.id);
+      const { id, ...data } = item;
+      batch.set(docRef, data);
+    };
+
+    seedPatients.forEach(p => addSeedItem('patients', p));
+    seedStaff.forEach(s => addSeedItem('staff', s));
+    seedRooms.forEach(r => addSeedItem('rooms', r));
+    seedMedicines.forEach(m => addSeedItem('medicines', m));
+    seedAlerts.forEach(a => addSeedItem('alerts', a));
+    seedAppointments.forEach(apt => addSeedItem('appointments', apt));
+    seedDiagnoses.forEach(d => addSeedItem('diagnoses', d));
+    seedTreatments.forEach(t => addSeedItem('treatments', t));
+    seedAnalyses.forEach(ana => addSeedItem('analyses', ana));
+    seedTasks.forEach(task => addSeedItem('tasks', task));
+    seedResponsibilities.forEach(resp => addSeedItem('responsibilities', resp));
+    seedHistory.forEach(hist => addSeedItem('history', hist));
+    seedAiReports.forEach(rep => addSeedItem('aiReports', rep));
+
+    await batch.commit();
+    console.log('Firestore database successfully seeded.');
+  } catch (err) {
+    console.error('Firestore seeding failed:', err);
+  }
+};
 
 // Real-time listener subscription
 export const subscribeCollection = (
   colName: DbCollection, 
   callback: (data: any[]) => void
 ): (() => void) => {
-  if (!hasFirebaseConfig || !firestore) {
-    return mockDb.subscribe(colName, callback);
-  }
-
   try {
     const q = query(collection(firestore, colName));
     return onSnapshot(q, (snapshot) => {
@@ -35,21 +88,15 @@ export const subscribeCollection = (
       callback(items);
     }, (error) => {
       console.error(`Firestore subscription error for ${colName}:`, error);
-      // Fallback to mock if Firestore fails
-      return mockDb.subscribe(colName, callback);
     });
   } catch (err) {
-    console.error(`Firestore query creation failed for ${colName}, falling back to mock:`, err);
-    return mockDb.subscribe(colName, callback);
+    console.error(`Firestore query creation failed for ${colName}:`, err);
+    return () => {};
   }
 };
 
 // CRUD: Read all
 export const getItems = async (colName: DbCollection): Promise<any[]> => {
-  if (!hasFirebaseConfig || !firestore) {
-    return mockDb.getAll(colName);
-  }
-
   try {
     const querySnapshot = await getDocs(collection(firestore, colName));
     return querySnapshot.docs.map(doc => ({
@@ -58,16 +105,12 @@ export const getItems = async (colName: DbCollection): Promise<any[]> => {
     }));
   } catch (err) {
     console.error(`Firestore getItems failed for ${colName}:`, err);
-    return mockDb.getAll(colName);
+    throw err;
   }
 };
 
 // CRUD: Read by ID
 export const getItemById = async (colName: DbCollection, id: string): Promise<any | null> => {
-  if (!hasFirebaseConfig || !firestore) {
-    return mockDb.getById(colName, id);
-  }
-
   try {
     const docRef = doc(firestore, colName, id);
     const docSnap = await getDoc(docRef);
@@ -77,7 +120,7 @@ export const getItemById = async (colName: DbCollection, id: string): Promise<an
     return null;
   } catch (err) {
     console.error(`Firestore getItemById failed for ${colName}/${id}:`, err);
-    return mockDb.getById(colName, id);
+    throw err;
   }
 };
 
@@ -87,10 +130,6 @@ export const addItem = async (
   item: any, 
   actor?: { id: string; name: string; role: string }
 ): Promise<any> => {
-  if (!hasFirebaseConfig || !firestore) {
-    return mockDb.add(colName, item, actor);
-  }
-
   try {
     const docRef = await addDoc(collection(firestore, colName), {
       ...item,
@@ -115,7 +154,7 @@ export const addItem = async (
     return newDoc;
   } catch (err) {
     console.error(`Firestore addItem failed for ${colName}:`, err);
-    return mockDb.add(colName, item, actor);
+    throw err;
   }
 };
 
@@ -126,10 +165,6 @@ export const updateItem = async (
   fields: any, 
   actor?: { id: string; name: string; role: string }
 ): Promise<any | null> => {
-  if (!hasFirebaseConfig || !firestore) {
-    return mockDb.update(colName, id, fields, actor);
-  }
-
   try {
     const docRef = doc(firestore, colName, id);
     const docSnap = await getDoc(docRef);
@@ -166,7 +201,7 @@ export const updateItem = async (
     return newDoc;
   } catch (err) {
     console.error(`Firestore updateItem failed for ${colName}/${id}:`, err);
-    return mockDb.update(colName, id, fields, actor);
+    throw err;
   }
 };
 
@@ -176,10 +211,6 @@ export const deleteItem = async (
   id: string, 
   actor?: { id: string; name: string; role: string }
 ): Promise<boolean> => {
-  if (!hasFirebaseConfig || !firestore) {
-    return mockDb.delete(colName, id, actor);
-  }
-
   try {
     const docRef = doc(firestore, colName, id);
     const docSnap = await getDoc(docRef);
@@ -204,11 +235,6 @@ export const deleteItem = async (
     return true;
   } catch (err) {
     console.error(`Firestore deleteItem failed for ${colName}/${id}:`, err);
-    return mockDb.delete(colName, id, actor);
+    throw err;
   }
-};
-
-// Reset local DB helper
-export const resetLocalDatabase = () => {
-  mockDb.resetDatabase();
 };

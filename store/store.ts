@@ -4,7 +4,8 @@ import {
   addItem, 
   updateItem, 
   deleteItem, 
-  getItems 
+  getItems,
+  seedFirestoreIfEmpty
 } from '@/lib/firebase/db';
 import { 
   Patient, 
@@ -209,6 +210,9 @@ export const useStore = create<AppState>((set, get) => {
     initSubscriptions: () => {
       // Clear old listeners first
       get().clearSubscriptions();
+
+      // Seed Firestore database if empty
+      seedFirestoreIfEmpty();
 
       const collections: { key: keyof AppState; name: string }[] = [
         { key: 'patients', name: 'patients' },

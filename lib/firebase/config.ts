@@ -12,16 +12,24 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-const hasFirebaseConfig = typeof window !== 'undefined' 
-  ? !!process.env.NEXT_PUBLIC_FIREBASE_API_KEY 
-  : !!process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+// Check if we are building statically without actual environment variables
+const isBuildTime = typeof window === 'undefined' && !process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
 
-const app = hasFirebaseConfig 
-  ? (getApps().length === 0 ? initializeApp(firebaseConfig) : getApp())
-  : null;
+const activeConfig = isBuildTime || !firebaseConfig.apiKey
+  ? {
+      apiKey: "dummy-key-for-build-time",
+      authDomain: "dummy-project.firebaseapp.com",
+      projectId: "dummy-project",
+      storageBucket: "dummy-project.appspot.com",
+      messagingSenderId: "1234567890",
+      appId: "1:1234567890:web:dummyapphash"
+    }
+  : firebaseConfig;
 
-const auth = app ? getAuth(app) : null;
-const firestore = app ? getFirestore(app) : null;
-const storage = app ? getStorage(app) : null;
+const app = getApps().length === 0 ? initializeApp(activeConfig) : getApp();
 
-export { app, auth, firestore, storage, hasFirebaseConfig };
+const auth = getAuth(app);
+const firestore = getFirestore(app);
+const storage = getStorage(app);
+
+export { app, auth, firestore, storage };

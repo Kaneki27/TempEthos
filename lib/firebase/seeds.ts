@@ -1,23 +1,6 @@
-import { Patient, Doctor, Nurse, Administrative, Staff, Treatment, Diagnosis, MedicalHistory, Analysis, Medicine, Room, Task, Responsibility, Alert, AuditLog, AiReport, Appointment } from '../../types';
+import { Patient, Doctor, Nurse, Administrative, Staff, Treatment, Diagnosis, MedicalHistory, Analysis, Medicine, Room, Task, Responsibility, Alert, AiReport, Appointment } from '../../types';
 
-// Helper to generate unique IDs
-const generateId = () => Math.random().toString(36).substring(2, 11);
-
-// Helper for local storage
-const getStorageItem = <T>(key: string, defaultValue: T): T => {
-  if (typeof window === 'undefined') return defaultValue;
-  const item = localStorage.getItem(key);
-  return item ? JSON.parse(item) : defaultValue;
-};
-
-const setStorageItem = <T>(key: string, value: T): void => {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem(key, JSON.stringify(value));
-  }
-};
-
-// Seed Data definition
-const seedPatients: Patient[] = [
+export const seedPatients: Patient[] = [
   {
     id: 'patient-1',
     name: 'Aarav Mehta',
@@ -71,7 +54,7 @@ const seedPatients: Patient[] = [
   }
 ];
 
-const seedStaff: Staff[] = [
+export const seedStaff: Staff[] = [
   {
     id: 'staff-admin-1',
     name: 'Aditya Sen',
@@ -143,7 +126,7 @@ const seedStaff: Staff[] = [
   } as Nurse
 ];
 
-const seedRooms: Room[] = [
+export const seedRooms: Room[] = [
   { id: 'room-101', roomNumber: '101', ward: 'ICU Ward A', type: 'icu', capacity: 2, currentOccupancy: 1, status: 'active', patientIds: ['patient-1'] },
   { id: 'room-102', roomNumber: '102', ward: 'ICU Ward A', type: 'icu', capacity: 2, currentOccupancy: 0, status: 'active', patientIds: [] },
   { id: 'room-201', roomNumber: '201', ward: 'General Ward B', type: 'general', capacity: 4, currentOccupancy: 2, status: 'active', patientIds: ['patient-2', 'patient-3'] },
@@ -151,34 +134,34 @@ const seedRooms: Room[] = [
   { id: 'room-301', roomNumber: '301', ward: 'Maternity Ward C', type: 'maternity', capacity: 2, currentOccupancy: 0, status: 'maintenance', patientIds: [] }
 ];
 
-const seedMedicines: Medicine[] = [
+export const seedMedicines: Medicine[] = [
   { id: 'med-1', name: 'Paracetamol', genericName: 'Acetaminophen', category: 'Analgesics', dosageForm: 'Tablet', strength: '650mg', manufacturer: 'GSK', stockQty: 500, reorderLevel: 100, expiryDate: '2027-12-31', unitPrice: 15, createdAt: new Date().toISOString() },
-  { id: 'med-2', name: 'Amoxicillin', genericName: 'Amoxicillin Trihydrate', category: 'Antibiotics', dosageForm: 'Capsule', strength: '500mg', manufacturer: 'Abbott', stockQty: 80, reorderLevel: 100, expiryDate: '2026-09-15', unitPrice: 45, createdAt: new Date().toISOString() }, // Low Stock!
-  { id: 'med-3', name: 'Humulin R', genericName: 'Insulin Regular', category: 'Antidiabetics', dosageForm: 'Injection', strength: '100 IU/mL', manufacturer: 'Eli Lilly', stockQty: 120, reorderLevel: 30, expiryDate: '2026-07-05', unitPrice: 320, createdAt: new Date().toISOString() }, // Close Expiry!
+  { id: 'med-2', name: 'Amoxicillin', genericName: 'Amoxicillin Trihydrate', category: 'Antibiotics', dosageForm: 'Capsule', strength: '500mg', manufacturer: 'Abbott', stockQty: 80, reorderLevel: 100, expiryDate: '2026-09-15', unitPrice: 45, createdAt: new Date().toISOString() },
+  { id: 'med-3', name: 'Humulin R', genericName: 'Insulin Regular', category: 'Antidiabetics', dosageForm: 'Injection', strength: '100 IU/mL', manufacturer: 'Eli Lilly', stockQty: 120, reorderLevel: 30, expiryDate: '2026-07-05', unitPrice: 320, createdAt: new Date().toISOString() },
   { id: 'med-4', name: 'Telmisartan', genericName: 'Telmisartan', category: 'Antihypertensives', dosageForm: 'Tablet', strength: '40mg', manufacturer: 'Cipla', stockQty: 400, reorderLevel: 50, expiryDate: '2028-03-20', unitPrice: 28, createdAt: new Date().toISOString() }
 ];
 
-const seedAlerts: Alert[] = [
+export const seedAlerts: Alert[] = [
   { id: 'alert-1', patientId: 'patient-1', patientName: 'Aarav Mehta', priority: 'critical', title: 'High Heart Rate Warning', body: 'Telemetry monitors spike in pulse rate: 128 bpm. Review vitals immediately.', status: 'active', createdAt: new Date(Date.now() - 15 * 60 * 1000).toISOString() },
   { id: 'alert-2', patientId: 'patient-2', patientName: 'Kalyani Sharma', priority: 'medium', title: 'Assistance Call', body: 'Patient requested assistance for bathroom mobility support in Room 201.', status: 'active', createdAt: new Date(Date.now() - 30 * 60 * 1000).toISOString() }
 ];
 
-const seedAppointments: Appointment[] = [
+export const seedAppointments: Appointment[] = [
   { id: 'apt-1', patientId: 'patient-1', doctorId: 'staff-doctor-1', roomId: 'room-101', dateTime: new Date(Date.now() + 4 * 3600 * 1000).toISOString(), durationMin: 30, type: 'Cardiology Consultation', status: 'scheduled', notes: 'Routine checkup post myocardial infarction recovery.', createdAt: new Date().toISOString() },
   { id: 'apt-2', patientId: 'patient-2', doctorId: 'staff-doctor-1', roomId: 'room-201', dateTime: new Date(Date.now() + 24 * 3600 * 1000).toISOString(), durationMin: 45, type: 'Hypertension Review', status: 'scheduled', notes: 'Adjusting telmisartan dosage.', createdAt: new Date().toISOString() }
 ];
 
-const seedDiagnoses: Diagnosis[] = [
+export const seedDiagnoses: Diagnosis[] = [
   { id: 'diag-1', patientId: 'patient-1', staffId: 'staff-doctor-1', date: new Date(Date.now() - 10 * 24 * 3600 * 1000).toISOString(), icdCode: 'I21.9', description: 'Acute myocardial infarction, unspecified', severity: 'critical' },
   { id: 'diag-2', patientId: 'patient-2', staffId: 'staff-doctor-1', date: new Date(Date.now() - 5 * 24 * 3600 * 1000).toISOString(), icdCode: 'I10', description: 'Essential (primary) hypertension', severity: 'high' }
 ];
 
-const seedTreatments: Treatment[] = [
+export const seedTreatments: Treatment[] = [
   { id: 'treat-1', patientId: 'patient-1', staffId: 'staff-doctor-1', type: 'medication', date: new Date(Date.now() - 9 * 24 * 3600 * 1000).toISOString(), medName: 'Aspirin', route: 'Oral', frequency: 'Once daily', dosage: '75mg', startDate: '2026-06-11', endDate: '2027-06-11', prescribingDoctor: 'Dr. Sarah Jenkins' } as Treatment,
   { id: 'treat-2', patientId: 'patient-2', staffId: 'staff-doctor-1', type: 'rehabilitation', date: new Date(Date.now() - 4 * 24 * 3600 * 1000).toISOString(), goals: 'Reduce blood pressure through cardiovascular training', initialAssessment: 'BP 150/95, low cardiovascular endurance', plan: 'Brisk walking 20 mins, breathing exercises', schedule: 'Mon, Wed, Fri mornings', progressNotes: 'Patient showing adherence. BP down to 142/88.', dischargeStatus: 'Ongoing' } as Treatment
 ];
 
-const seedAnalyses: Analysis[] = [
+export const seedAnalyses: Analysis[] = [
   {
     id: 'ana-1',
     patientId: 'patient-1',
@@ -186,7 +169,7 @@ const seedAnalyses: Analysis[] = [
     type: 'bioblood',
     date: new Date(Date.now() - 8 * 24 * 3600 * 1000).toISOString(),
     bloodCount: { wbc: 8500, rbc: 4.8, hemoglobin: 14.2, platelets: 250000 },
-    bloodChemistry: { sodium: 138, potassium: 4.1, glucose: 185, creatinine: 1.1 }, // elevated glucose
+    bloodChemistry: { sodium: 138, potassium: 4.1, glucose: 185, creatinine: 1.1 },
     bloodType: 'A+',
     coagulationProfile: { pt: 11.5, inr: 1.0 },
     referenceRanges: 'WBC: 4500-11000, Hemoglobin: 13.5-17.5, Glucose: 70-100 (Fasting)'
@@ -208,22 +191,22 @@ const seedAnalyses: Analysis[] = [
   } as Analysis
 ];
 
-const seedTasks: Task[] = [
+export const seedTasks: Task[] = [
   { id: 'task-1', title: 'Administer insulin to Patient Aarav Mehta', assignedTo: 'staff-nurse-1', priority: 'high', dueDate: new Date(Date.now() + 2 * 3600 * 1000).toISOString(), status: 'pending', category: 'Medication round', createdAt: new Date().toISOString() },
   { id: 'task-2', title: 'Check vitals for Kalyani Sharma (Room 201)', assignedTo: 'staff-nurse-1', priority: 'medium', dueDate: new Date(Date.now() + 3 * 3600 * 1000).toISOString(), status: 'pending', category: 'Room check', createdAt: new Date().toISOString() },
   { id: 'task-3', title: 'Wound dressing change: Vikram Singh', assignedTo: 'staff-nurse-2', priority: 'medium', dueDate: new Date(Date.now() + 1 * 3600 * 1000).toISOString(), status: 'pending', category: 'Clinical task', createdAt: new Date().toISOString() }
 ];
 
-const seedResponsibilities: Responsibility[] = [
+export const seedResponsibilities: Responsibility[] = [
   { id: 'resp-1', title: 'ICU Shift Leader', assignedTo: 'staff-nurse-1', department: 'ICU', description: 'Oversee nursing staff assignments and patient admissions inside ICU Ward A.', createdAt: new Date().toISOString() },
   { id: 'resp-2', title: 'Discharge Planning coordinator', assignedTo: 'staff-admin-1', department: 'Administration', description: 'Coordinate with doctors and families for efficient room turnovers.', createdAt: new Date().toISOString() }
 ];
 
-const seedHistory: MedicalHistory[] = [
+export const seedHistory: MedicalHistory[] = [
   { id: 'hist-1', patientId: 'patient-1', staffId: 'staff-doctor-1', timestamp: new Date(Date.now() - 10 * 24 * 3600 * 1000).toISOString(), result: 'Admitted with substernal chest pressure radiating to left arm.', observation: 'ECG showing ST-segment elevation. Transferred to ICU.', complication: 'None', recordedBy: 'Dr. Sarah Jenkins' }
 ];
 
-const seedAiReports: AiReport[] = [
+export const seedAiReports: AiReport[] = [
   {
     id: 'ai-rep-1',
     patientId: 'patient-1',
@@ -244,198 +227,3 @@ const seedAiReports: AiReport[] = [
     expiresAt: new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString()
   }
 ];
-
-// Event listener engine
-type DbCollection = 'patients' | 'staff' | 'rooms' | 'medicines' | 'alerts' | 'appointments' | 'diagnoses' | 'treatments' | 'analyses' | 'tasks' | 'responsibilities' | 'history' | 'aiReports' | 'auditLogs';
-
-class MockDatabase {
-  private data: Record<DbCollection, any[]> = {
-    patients: [],
-    staff: [],
-    rooms: [],
-    medicines: [],
-    alerts: [],
-    appointments: [],
-    diagnoses: [],
-    treatments: [],
-    analyses: [],
-    tasks: [],
-    responsibilities: [],
-    history: [],
-    aiReports: [],
-    auditLogs: [],
-  };
-
-  private listeners: Record<string, ((data: any[]) => void)[]> = {};
-
-  constructor() {
-    this.loadAll();
-    if (this.data.patients.length === 0) {
-      this.seed();
-    }
-  }
-
-  private loadAll() {
-    Object.keys(this.data).forEach((key) => {
-      const col = key as DbCollection;
-      this.data[col] = getStorageItem<any[]>(`sehatsetu_${col}`, []);
-    });
-  }
-
-  private save(collection: DbCollection) {
-    setStorageItem(`sehatsetu_${collection}`, this.data[collection]);
-    this.notify(collection);
-  }
-
-  private seed() {
-    this.data.patients = seedPatients;
-    this.data.staff = seedStaff;
-    this.data.rooms = seedRooms;
-    this.data.medicines = seedMedicines;
-    this.data.alerts = seedAlerts;
-    this.data.appointments = seedAppointments;
-    this.data.diagnoses = seedDiagnoses;
-    this.data.treatments = seedTreatments;
-    this.data.analyses = seedAnalyses;
-    this.data.tasks = seedTasks;
-    this.data.responsibilities = seedResponsibilities;
-    this.data.history = seedHistory;
-    this.data.aiReports = seedAiReports;
-    this.data.auditLogs = [];
-
-    Object.keys(this.data).forEach((key) => {
-      this.save(key as DbCollection);
-    });
-  }
-
-  // Real-time observer system
-  public subscribe(collection: DbCollection, callback: (data: any[]) => void): () => void {
-    if (!this.listeners[collection]) {
-      this.listeners[collection] = [];
-    }
-    this.listeners[collection].push(callback);
-    // Send immediate initial data
-    callback(this.data[collection]);
-
-    // Return unsubscribe function
-    return () => {
-      this.listeners[collection] = this.listeners[collection].filter((cb) => cb !== callback);
-    };
-  }
-
-  private notify(collection: DbCollection) {
-    if (this.listeners[collection]) {
-      this.listeners[collection].forEach((callback) => callback([...this.data[collection]]));
-    }
-  }
-
-  private mapCollectionToEntityType(col: DbCollection): AuditLog['entityType'] {
-    if (col === 'patients') return 'patient';
-    if (col === 'treatments') return 'treatment';
-    if (col === 'diagnoses') return 'diagnosis';
-    if (col === 'analyses') return 'analysis';
-    if (col === 'medicines') return 'medicine';
-    if (col === 'appointments') return 'appointment';
-    if (col === 'rooms') return 'room';
-    if (col === 'tasks') return 'task';
-    return 'staff';
-  }
-
-  // CRUD Implementations
-  public getAll(collection: DbCollection): any[] {
-    return this.data[collection];
-  }
-
-  public getById(collection: DbCollection, id: string): any | null {
-    return this.data[collection].find((item) => item.id === id) || null;
-  }
-
-  public add(collection: DbCollection, doc: any, actor?: { id: string; name: string; role: string }): any {
-    const newDoc = {
-      ...doc,
-      id: doc.id || generateId(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    this.data[collection].push(newDoc);
-    this.save(collection);
-
-    if (actor && collection !== 'auditLogs') {
-      this.logAudit(actor, 'create', this.mapCollectionToEntityType(collection), newDoc.id, undefined, newDoc);
-    }
-    return newDoc;
-  }
-
-  public update(collection: DbCollection, id: string, fields: any, actor?: { id: string; name: string; role: string }): any | null {
-    const idx = this.data[collection].findIndex((item) => item.id === id);
-    if (idx === -1) return null;
-
-    const oldDoc = { ...this.data[collection][idx] };
-    const newDoc = {
-      ...oldDoc,
-      ...fields,
-      updatedAt: new Date().toISOString(),
-    };
-
-    this.data[collection][idx] = newDoc;
-    this.save(collection);
-
-    if (actor && collection !== 'auditLogs') {
-      // Calculate delta diff
-      const diff: any = { before: {}, after: {} };
-      Object.keys(fields).forEach((key) => {
-        if (oldDoc[key] !== fields[key]) {
-          diff.before[key] = oldDoc[key];
-          diff.after[key] = fields[key];
-        }
-      });
-      this.logAudit(actor, 'update', this.mapCollectionToEntityType(collection), id, diff);
-    }
-
-    return newDoc;
-  }
-
-  public delete(collection: DbCollection, id: string, actor?: { id: string; name: string; role: string }): boolean {
-    const idx = this.data[collection].findIndex((item) => item.id === id);
-    if (idx === -1) return false;
-
-    const oldDoc = this.data[collection][idx];
-    this.data[collection] = this.data[collection].filter((item) => item.id !== id);
-    this.save(collection);
-
-    if (actor && collection !== 'auditLogs') {
-      this.logAudit(actor, 'delete', this.mapCollectionToEntityType(collection), id, { before: oldDoc });
-    }
-    return true;
-  }
-
-  private logAudit(
-    actor: { id: string; name: string; role: string },
-    action: AuditLog['action'],
-    entityType: AuditLog['entityType'],
-    entityId: string,
-    diff?: AuditLog['diff'],
-    newVal?: any
-  ) {
-    const audit: AuditLog = {
-      id: generateId(),
-      userId: actor.id,
-      userName: actor.name,
-      role: actor.role,
-      action,
-      entityType,
-      entityId,
-      diff: diff || (action === 'create' ? { after: newVal } : undefined),
-      timestamp: new Date().toISOString(),
-    };
-    this.data.auditLogs.unshift(audit); // Recent first
-    this.save('auditLogs');
-  }
-
-  // Clear database helper
-  public resetDatabase() {
-    this.seed();
-  }
-}
-
-export const mockDb = new MockDatabase();

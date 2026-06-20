@@ -26,7 +26,7 @@ export default function LoginPage() {
       return;
     }
 
-    const success = await login(email, role);
+    const success = await login(email, role, password);
     if (success) {
       // Redirect based on role
       if (role === 'admin') router.push('/dashboard');
@@ -43,7 +43,7 @@ export default function LoginPage() {
     setErrorMsg('');
     setEmail(demoEmail);
     setRole(demoRole);
-    const success = await login(demoEmail, demoRole);
+    const success = await login(demoEmail, demoRole, 'password123');
     if (success) {
       if (demoRole === 'admin') router.push('/dashboard');
       else if (demoRole === 'doctor') router.push('/dashboard/doctor');

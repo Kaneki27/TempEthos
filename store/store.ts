@@ -52,7 +52,7 @@ interface AppState {
   unsubscribers: (() => void)[];
 
   // Auth Actions
-  login: (email: string, role: StaffRole) => Promise<boolean>;
+  login: (email: string, role: StaffRole, password?: string) => Promise<boolean>;
   logout: () => void;
   registerStaff: (staffData: Partial<Staff>) => Promise<any>;
 
@@ -108,7 +108,7 @@ export const useStore = create<AppState>((set, get) => {
     loading: {},
     unsubscribers: [],
 
-    login: async (email: string, role: StaffRole) => {
+    login: async (email: string, role: StaffRole, password?: string) => {
       set({ authLoading: true });
       try {
         // Authenticating against mock staff/patients list
@@ -125,23 +125,7 @@ export const useStore = create<AppState>((set, get) => {
             matchedUser = dbPatients[0];
           }
         } else {
-          matchedUser = dbStaff.find(s => s.email.toLowerCase() === email.toLowerCase() && s.role === role);
-          if (!matchedUser) {
-            // Create a default user profile if email doesn't exist to allow easy login
-            const defaultNames: Record<StaffRole, string> = {
-              admin: 'Chief Administrator Aditya',
-              doctor: 'Dr. Sarah Jenkins',
-              nurse: 'David Chen',
-              patient: 'Aarav Mehta'
-            };
-            matchedUser = {
-              id: `staff-${role}-${Date.now().toString().slice(-4)}`,
-              name: defaultNames[role],
-              email,
-              role,
-              department: role === 'doctor' ? 'Cardiology' : (role === 'nurse' ? 'ICU' : 'Administration')
-            };
-          }
+          matchedUser = dbStaff.find(s => s.email.toLowerCase() === email.toLowerCase() && s.role === role && s.password === password);
         }
 
         if (matchedUser) {

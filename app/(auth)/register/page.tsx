@@ -19,6 +19,7 @@ export default function RegisterPage() {
   const [jobTitle, setJobTitle] = useState('');
   const [department, setDepartment] = useState('');
   const [role, setRole] = useState<StaffRole>('doctor');
+  const [password, setPassword] = useState('');
   
   // Specific role attributes
   const [specialization, setSpecialization] = useState('');
@@ -35,8 +36,8 @@ export default function RegisterPage() {
     setErrorMsg('');
     setLoading(true);
 
-    if (!name || !email || !nationalId || !dob || !contact || !jobTitle || !department) {
-      setErrorMsg('All base profile fields are required.');
+    if (!name || !email || !password || !nationalId || !dob || !contact || !jobTitle || !department) {
+      setErrorMsg('All base profile fields are required (including password).');
       setLoading(false);
       return;
     }
@@ -48,6 +49,7 @@ export default function RegisterPage() {
       const basePayload: any = {
         name,
         email,
+        password,
         nationalId,
         dateOfBirth: dob,
         age,
@@ -155,6 +157,18 @@ export default function RegisterPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="name@hospital.com"
+                    className="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-cyan-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-slate-500 block mb-1.5">Credential Password</label>
+                  <input
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
                     className="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-cyan-500"
                   />
                 </div>
